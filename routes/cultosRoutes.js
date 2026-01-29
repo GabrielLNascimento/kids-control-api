@@ -134,9 +134,6 @@ router.get("/:cultoId/criancas", async (req, res) => {
             [cultoId],
         );
 
-        // DEBUG: Veja o que vem do banco
-        console.log("Resultado do banco:", result.rows[0]);
-
         const criancas = result.rows.map((row) => ({
             id: row.id,
             codigo: row.codigo,

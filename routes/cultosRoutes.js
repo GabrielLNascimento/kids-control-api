@@ -6,7 +6,7 @@ const pool = require("../config/db.js");
 router.get("/cultos", async (req, res) => {
     try {
         const result = await pool.query(
-            "SELECT * FROM cultos ORDER BY data DESC"
+            "SELECT * FROM cultos ORDER BY data DESC",
         );
         res.json(result.rows);
     } catch (err) {
@@ -42,7 +42,7 @@ router.post("/createculto", async (req, res) => {
         VALUES ($1, $2, $3)
         RETURNING *
         `,
-            [nome, data, periodo]
+            [nome, data, periodo],
         );
 
         res.status(201).json(result.rows[0]);
@@ -77,7 +77,7 @@ router.post("/:cultoId/adicionarcrianca", async (req, res) => {
         // verificar se já existe
         const existe = await pool.query(
             `SELECT id FROM culto_criancas WHERE culto_id = $1 AND crianca_id = $2`,
-            [cultoIdNum, criancaIdNum]
+            [cultoIdNum, criancaIdNum],
         );
 
         if (existe.rows.length > 0) {
@@ -87,7 +87,7 @@ router.post("/:cultoId/adicionarcrianca", async (req, res) => {
         // pegar último código
         const ultimoCodigoResult = await pool.query(
             `SELECT COALESCE(MAX(codigo), 0) AS ultimo FROM culto_criancas WHERE culto_id = $1`,
-            [cultoIdNum]
+            [cultoIdNum],
         );
 
         const ultimo = ultimoCodigoResult.rows[0]?.ultimo ?? 0;
@@ -96,9 +96,9 @@ router.post("/:cultoId/adicionarcrianca", async (req, res) => {
         // Inserir
         const insertResult = await pool.query(
             `INSERT INTO culto_criancas (culto_id, crianca_id, codigo) VALUES ($1, $2, $3) RETURNING *`,
-            [cultoIdNum, criancaIdNum, codigo]
+            [cultoIdNum, criancaIdNum, codigo],
         );
-        
+
         res.json({
             message: "Criança adicionada com sucesso",
             data: insertResult.rows[0],
@@ -112,9 +112,10 @@ router.post("/:cultoId/adicionarcrianca", async (req, res) => {
 // buscar as crianças de um culto especifico
 router.get("/:cultoId/criancas", async (req, res) => {
     try {
+        const { cultoId } = req.params;
+
         const result = await pool.query(
-            `
-            SELECT
+            `SELECT
                 cc.id,
                 cc.codigo,
                 cc.is_checked,
@@ -124,16 +125,19 @@ router.get("/:cultoId/criancas", async (req, res) => {
                 c.responsavel,
                 c.telefone,
                 c.r_alimentar,
-                c.n_especial
+                c.n_especial,
+                c.uso_imagem
             FROM culto_criancas cc
             JOIN criancas c ON c.id = cc.crianca_id
             WHERE cc.culto_id = $1
-            ORDER BY cc.codigo
-            `,
-            [req.params.cultoId]
+            ORDER BY cc.codigo`,
+            [cultoId],
         );
 
-        const mapped = result.rows.map((row) => ({
+        // DEBUG: Veja o que vem do banco
+        console.log("Resultado do banco:", result.rows[0]);
+
+        const criancas = result.rows.map((row) => ({
             id: row.id,
             codigo: row.codigo,
             isChecked: row.is_checked,
@@ -144,16 +148,20 @@ router.get("/:cultoId/criancas", async (req, res) => {
                 responsavel: row.responsavel,
                 telefone: row.telefone,
                 rAlimentar: row.r_alimentar,
-                nEspecial: row.n_especial
-            }
+                nEspecial: row.n_especial,
+                usoImagem: row.uso_imagem,
+            },
         }));
 
-        res.json(mapped);
+        // DEBUG: Veja o objeto mapeado
+        console.log("Objeto mapeado:", criancas[0]);
+
+        res.json(criancas);
     } catch (err) {
+        console.error("Erro ao buscar crianças:", err);
         res.status(500).json({ error: err.message });
     }
 });
-
 
 // Deletar criança do Culto
 router.get("/:cultoId/deletecrianca/:criancaId", async (req, res) => {
@@ -165,7 +173,7 @@ router.get("/:cultoId/deletecrianca/:criancaId", async (req, res) => {
             DELETE FROM culto_criancas
             WHERE culto_id = $1 AND crianca_id = $2
             `,
-            [cultoId, criancaId]
+            [cultoId, criancaId],
         );
 
         res.json({ message: "Criança removida com sucesso" });
@@ -186,7 +194,7 @@ router.patch("/:cultoId/crianca/:criancaId/check", async (req, res) => {
             WHERE culto_id = $2 AND crianca_id = $3
             RETURNING *
             `,
-            [isChecked, cultoId, criancaId]
+            [isChecked, cultoId, criancaId],
         );
 
         res.json(result.rows[0]);

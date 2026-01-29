@@ -153,9 +153,6 @@ router.get("/:cultoId/criancas", async (req, res) => {
             },
         }));
 
-        // DEBUG: Veja o objeto mapeado
-        console.log("Objeto mapeado:", criancas[0]);
-
         res.json(criancas);
     } catch (err) {
         console.error("Erro ao buscar crianças:", err);

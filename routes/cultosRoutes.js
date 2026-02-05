@@ -126,7 +126,8 @@ router.get("/:cultoId/criancas", async (req, res) => {
                 c.telefone,
                 c.r_alimentar,
                 c.n_especial,
-                c.uso_imagem
+                c.uso_imagem,
+                c.t_fralda
             FROM culto_criancas cc
             JOIN criancas c ON c.id = cc.crianca_id
             WHERE cc.culto_id = $1
@@ -147,6 +148,7 @@ router.get("/:cultoId/criancas", async (req, res) => {
                 rAlimentar: row.r_alimentar,
                 nEspecial: row.n_especial,
                 usoImagem: row.uso_imagem,
+                tFralda: row.t_fralda
             },
         }));
 

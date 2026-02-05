@@ -13,7 +13,8 @@ router.post("/createcrianca", async (req, res) => {
             dataNascimento,
             rAlimentar,
             nEspecial,
-            usoImagem
+            usoImagem,
+            tFralda
         } = req.body;
 
         const idade = calcularIdade(dataNascimento);
@@ -21,8 +22,8 @@ router.post("/createcrianca", async (req, res) => {
         const result = await pool.query(
             `
             INSERT INTO criancas
-            (nome, telefone, responsavel, data_nascimento, idade, r_alimentar, n_especial, uso_imagem)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            (nome, telefone, responsavel, data_nascimento, idade, r_alimentar, n_especial, uso_imagem, t_fralda)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
             `,
             [
@@ -33,7 +34,8 @@ router.post("/createcrianca", async (req, res) => {
                 idade,
                 rAlimentar,
                 nEspecial,
-                usoImagem
+                usoImagem,
+                tFralda
             ]
         );
 
@@ -93,7 +95,8 @@ router.put("/editcrianca/:id", async (req, res) => {
             dataNascimento,
             rAlimentar,
             nEspecial,
-            usoImagem
+            usoImagem,
+            tFralda
         } = req.body;
 
         const idade = dataNascimento ? calcularIdade(dataNascimento) : null;
@@ -138,6 +141,11 @@ router.put("/editcrianca/:id", async (req, res) => {
         if (usoImagem !== undefined) {
             updates.push(`uso_imagem = $${paramCount}`);
             values.push(usoImagem);
+            paramCount++;
+        }
+        if (tFralda !== undefined) {
+            updates.push(`t_fralda = $${paramCount}`);
+            values.push(tFralda);
             paramCount++;
         }
 
